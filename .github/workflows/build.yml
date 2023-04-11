@@ -1,0 +1,93 @@
+name: Build
+on:
+  push:
+    branches:
+    - 'master'
+    paths-ignore:
+    - '**.md'
+    - '**.gitignore'
+    - '**.opam'
+    - 'LICENSE'
+  pull_request:
+    paths-ignore:
+    - '**.md'
+    - '**.gitignore'
+    - '**.opam'
+    - 'LICENSE'
+permissions:
+  contents: read
+env:
+  OCAML_COMILER_VERSION: "4.13.1"
+  JOBS: 2
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout branch ${{ github.ref_name }}
+        uses: actions/checkout@v3
+
+      - name: Restore opam cache
+        id: opam-cache
+        uses: actions/cache@v3
+        with:
+          path: "~/.opam"
+          key: opam-${{env.OCAML_COMILER_VERSION}}-${{hashFiles('.github/deps.opam.locked')}}
+          restore-keys: |
+            opam-${{env.OCAML_COMILER_VERSION}}-
+
+      - name: Set up OCaml
+        uses: avsm/setup-ocaml@v1
+        with:
+          ocaml-version: ${{env.OCAML_COMILER_VERSION}}
+
+      - name: Build dependencies
+        #if: ${{ !steps.opam-cache.outputs.cache-hit }}
+        run: |
+          opam repo add coq-released https://coq.inria.fr/opam/released
+          opam install --deps-only -j${{ env.JOBS }} .github/deps.opam.locked
+          opam clean -a -c -s --logs
+
+      - name: Set up environment
+        run: |
+          echo "::group::Setting up problem matcher"
+          echo "::add-matcher::./.github/coq-errors.json"
+          echo "::endgroup::"
+
+      - name: Build core
+        run: |
+          echo "::group::Build Core"
+          opam exec -- make -j${{ env.JOBS }} theory
+          echo "::endgroup::"
+
+      - name: Build tests
+        run: |
+          echo "::group::Build tests"
+          opam exec -- make -j${{ env.JOBS }} tests
+          echo "::endgroup::"
+
+      - name: Set up Elm
+        run: |
+          curl -L -o elm.gz https://github.com/elm/compiler/releases/download/0.19.1/binary-for-linux-64-bit.gz
+          gunzip elm.gz
+          sudo chmod +x elm
+          sudo mv elm /usr/local/bin/
+      - name: Set up elm-test
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Set up elm-test
+        run: |
+          npm install -g elm-test@0.19.1-revision9
+
+      - name: Test extraction
+        run: |
+          echo "::group::Running tests"
+          make -j2 -C tests test-extraction
+          echo "::endgroup::"
+
+          echo "::group::Cleaning up"
+          make -j2 -C tests clean-extraction-out-files
+          make -j2 -C tests clean-compiled-extraction
+          echo "::endgroup::"

@@ -1,0 +1,9 @@
+-Q ../theories ElmExtraction
+
+-Q theories ElmExtraction.Tests
+theories/Ack.v
+theories/ElmExtractExamples.v
+theories/ElmExtractTests.v
+theories/ElmForms.v
+theories/RecordSet.v
+theories/RecordUpdate.v
