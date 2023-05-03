@@ -1,2 +1,2 @@
-From ConCert.Utils Require Export RecordSet.
+From ElmExtraction.Tests Require Export RecordSet.
 Export RecordSetNotations.

@@ -5,15 +5,15 @@ a list after validating the input data. We use the Coq version of
 refinement types (a type with a predicate) to express the fact that
 the list of users contains only valid data. *)
 
-From ConCert.Extraction Require Import Common.
-From ConCert.Extraction Require Import PrettyPrinterMonad.
-From ConCert.Extraction Require Import ElmExtract.
+From ElmExtraction Require Import Common.
+From ElmExtraction Require Import PrettyPrinterMonad.
+From ElmExtraction Require Import ElmExtract.
 From MetaCoq.Erasure.Typed Require Import Extraction.
 From MetaCoq.Erasure.Typed Require Import Optimize.
 From MetaCoq.Erasure.Typed Require Import CertifyingInlining.
 From MetaCoq.Erasure.Typed Require Import ResultMonad.
-From ConCert.Utils Require Import StringExtra.
-From ConCert.Utils Require Import RecordUpdate.
+From ElmExtraction Require Import StringExtra.
+From ElmExtraction.Tests Require Import RecordUpdate.
 From MetaCoq.Common Require Import Kernames.
 From MetaCoq.Template Require Import Ast.
 From MetaCoq.Template Require Import TemplateMonad.
@@ -300,4 +300,4 @@ Definition elm_extraction (m : ElmMod) (TT : list (kername * string)) : Template
 Time MetaCoq Run (t <- elm_extraction USER_FORM_APP TT;;
                   tmDefinition (s_to_bs "extracted_app") t).
 
-Redirect "tests/extracted-code/elm-web-extract/UserList.elm" MetaCoq Run (tmMsg (s_to_bs extracted_app)).
+Redirect "extracted-code/elm-web-extract/UserList.elm" MetaCoq Run (tmMsg (s_to_bs extracted_app)).

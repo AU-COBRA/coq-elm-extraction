@@ -1,11 +1,11 @@
 (** * Tests for extraction to Elm *)
-From ConCert.Extraction Require Import Common.
+From ElmExtraction Require Import Common.
 From MetaCoq.Erasure.Typed Require Import Extraction.
-From ConCert.Extraction Require Import ElmExtract.
-From ConCert.Extraction Require Import PrettyPrinterMonad.
+From ElmExtraction Require Import ElmExtract.
+From ElmExtraction Require Import PrettyPrinterMonad.
 From MetaCoq.Erasure.Typed Require Import Optimize.
 From MetaCoq.Erasure.Typed Require Import ResultMonad.
-From ConCert.Utils Require Import StringExtra.
+From ElmExtraction Require Import StringExtra.
 From MetaCoq.Common Require Import Kernames.
 From MetaCoq.Template Require Import Ast.
 From MetaCoq.Template Require Import TemplateMonad.

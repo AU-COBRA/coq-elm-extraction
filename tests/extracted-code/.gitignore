@@ -1,0 +1,14 @@
+*.out
+
+## Elm tests
+elm-extract/elm-stuff/
+elm-extract/node_modules/
+elm-extract/src/
+elm-extract/tests/
+elm-extract/*.html
+
+elm-web-extract/elm-stuff/
+elm-web-extract/node_modules/
+elm-web-extract/src/
+elm-web-extract/tests/
+elm-web-extract/*.html
