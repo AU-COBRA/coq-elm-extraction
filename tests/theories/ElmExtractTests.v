@@ -9,7 +9,7 @@ From ElmExtraction Require Import StringExtra.
 From MetaCoq.Common Require Import Kernames.
 From MetaCoq.Template Require Import Ast.
 From MetaCoq.Template Require Import TemplateMonad.
-From MetaCoq Require Import utils.
+From MetaCoq.Utils Require Import utils.
 From Coq Require Import String.
 
 Local Open Scope string.
