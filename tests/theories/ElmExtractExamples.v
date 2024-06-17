@@ -13,6 +13,7 @@ From MetaCoq.Erasure.Typed Require Import Extraction.
 From ElmExtraction Require Import ElmExtract.
 From ElmExtraction Require Import PrettyPrinterMonad.
 From MetaCoq.Erasure.Typed Require Import ResultMonad.
+From MetaCoq.Erasure.Typed Require Import Optimize.
 From MetaCoq.Erasure.Typed Require Import CertifyingEta.
 From ElmExtraction.Tests Require Import ElmExtractTests.
 From ElmExtraction.Tests Require Import Ack.
@@ -33,6 +34,13 @@ Instance ElmBoxes : ElmPrintConfig :=
      false_elim_def := "false_rec ()"; (* predefined function *)
      print_full_names := false (* short names for readability *)|}.
 
+Definition no_check_args :=
+  {| check_wf_env_func Σ := Ok (assume_env_wellformed Σ);
+     template_transforms := [];
+     pcuic_args :=
+       {| optimize_prop_discr := true;
+          extract_transforms := [dearg_transform (fun _ => None) true true false false false] |} |}.
+
 Definition result_err_bytestring A := result A bytestring.String.t.
 
 Definition general_wrapped (p : program) (pre post : string)
@@ -41,7 +49,8 @@ Definition general_wrapped (p : program) (pre post : string)
            | tConst kn _ => ret kn
            | _ => Err (s_to_bs "Expected program to be a tConst")
            end;;
-  Σ <- extract_template_env_within_coq
+  Σ <- extract_template_env
+         no_check_args
          p.1
          (KernameSet.singleton entry)
          (fun k => existsb (eq_kername k) ignore);;
