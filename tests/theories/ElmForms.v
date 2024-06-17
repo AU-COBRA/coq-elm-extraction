@@ -184,7 +184,7 @@ Definition extract_elm_within_coq (should_inline : kername -> bool) :=
    template_transforms := [CertifyingInlining.template_inline should_inline ];
    pcuic_args := {| optimize_prop_discr := true;
                     extract_transforms :=
-                      [dearg_transform (fun _ => None) true true true true true] |} |}.
+                      [dearg_transform (fun _ => None) true true true true false] |} |}.
 
 
 Local Instance ElmBoxes : ElmPrintConfig :=
