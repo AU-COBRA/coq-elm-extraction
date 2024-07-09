@@ -24,6 +24,26 @@ A framework for extracting Coq programs to Elm.
   - ["Extracting Smart Contracts Tested and Verified in Coq"](https://arxiv.org/abs/2012.09138) doi:[10.1145/3437992.3439934](https://doi.org/10.1145/3437992.3439934)
 
 
+## Building and installation instructions
+
+The easiest way to install the latest released version is via [OPAM](https://opam.ocaml.org/doc/Install.html):
+
+```shell
+opam repo add coq-released https://coq.inria.fr/opam/released
+opam install coq-elm-extraction
+```
+
+To instead build and install manually, do:
+
+```shell
+opam repo add coq-released https://coq.inria.fr/opam/released
+git clone https://github.com/AU-COBRA/coq-elm-extraction.git
+cd coq-elm-extraction
+opam install . --deps-only
+make #or make -j <number-of-cores-on-your-machine> 
+make install
+```
+
 ## Documentation
 
 For documentation see [ConCert](https://github.com/AU-COBRA/ConCert)
