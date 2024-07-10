@@ -46,4 +46,6 @@ make install
 
 ## Documentation
 
-For documentation see [ConCert](https://github.com/AU-COBRA/ConCert)
+For documentation see [examples](/tests/theories/) and [generated CoqDoc](https://au-cobra.github.io/coq-elm-extraction/).
+
+Additional examples can be found in [ConCert](https://github.com/AU-COBRA/ConCert).
