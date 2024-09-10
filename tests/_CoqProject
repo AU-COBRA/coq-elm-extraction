@@ -1,3 +1,6 @@
+-arg -w -arg -default-output-directory
+-arg -w -arg -non-reversible-notation
+
 -Q ../theories ElmExtraction
 
 -Q theories ElmExtraction.Tests
