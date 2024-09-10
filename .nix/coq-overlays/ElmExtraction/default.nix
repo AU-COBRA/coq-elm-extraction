@@ -1,7 +1,7 @@
 { lib, mkCoqDerivation, which, coq, metacoq, version ? null }:
 
 with lib; mkCoqDerivation {
-  pname = "elm-extraction";
+  pname = "ElmExtraction";
   repo = "coq-elm-extraction";
   owner = "AU-COBRA";
   domain = "github.com";

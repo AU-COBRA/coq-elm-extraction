@@ -4,7 +4,7 @@
   ## unless you made an automated or manual update
   ## to another supported format.
 
-  attribute = "elm-extraction";
+  attribute = "ElmExtraction";
 
   default-bundle = "8.17";
 
