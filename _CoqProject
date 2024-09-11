@@ -1,3 +1,5 @@
+-arg -w -arg -non-reversible-notation
+
 -Q theories ElmExtraction
 theories/Common.v
 theories/ElmExtract.v
