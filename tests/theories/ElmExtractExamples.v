@@ -21,10 +21,10 @@ From MetaCoq.Common Require Import Kernames.
 From MetaCoq.Template Require Import Ast.
 From MetaCoq.Template Require Import TemplateMonad.
 From MetaCoq.Utils Require Import utils.
-From Coq Require Import String.
+From MetaCoq.Utils Require Import bytestring.
 
 Import MCMonadNotation.
-Local Open Scope string.
+Local Open Scope bs_scope.
 
 #[local]
 Instance ElmBoxes : ElmPrintConfig :=
@@ -47,7 +47,7 @@ Definition general_wrapped (p : program) (pre post : string)
   (ignore: list kername) (TT : list (kername * string)) : result_err_bytestring _ :=
   entry <- match p.2 with
            | tConst kn _ => ret kn
-           | _ => Err (s_to_bs "Expected program to be a tConst")
+           | _ => Err "Expected program to be a tConst"
            end;;
   Σ <- extract_template_env
          no_check_args
@@ -55,7 +55,7 @@ Definition general_wrapped (p : program) (pre post : string)
          (KernameSet.singleton entry)
          (fun k => existsb (eq_kername k) ignore);;
   let TT_fun kn := option_map snd (List.find (fun '(kn',v) => eq_kername kn kn') TT) in
-  '(_, s) <- map_error (fun x => s_to_bs x) (finish_print (print_env Σ TT_fun));;
+  '(_, s) <- (finish_print (print_env Σ TT_fun));;
   ret (pre ++ Common.nl ++ s ++ Common.nl ++ post).
 
 Definition wrapped (p : program) (pre post : string) : result _ _ :=
@@ -66,16 +66,16 @@ Module ElmExamples.
   Import Lia.
 
   Definition Preambule mod_name :=
-    concat Common.nl
+    bytestring.String.concat Common.nl
            ["module " ++ mod_name ++ " exposing (..)";
             "import Test";
             "import Html";
             "import Expect exposing (Expectation)"].
 
   Definition main_and_test (test : string) :=
-    ("main = Html.text "++
+    "main = Html.text "++
       Common.parens false ("Debug.toString " ++ Common.parens false test) ++ Common.nl ++
-    "suite = Test.test (Debug.toString 1)" ++ Common.parens false ("\ _ -> " ++ test))%string.
+    "suite = Test.test (Debug.toString 1)" ++ Common.parens false ("\ _ -> " ++ test).
 
   (* [safe_pred] example is inspired by Letozey's A New Extraction for Coq *)
   Definition safe_pred (n:nat) (not_zero : O<>n) : {p :nat | n=(S p)} :=
@@ -88,7 +88,7 @@ Module ElmExamples.
   Program Definition safe_pred_partial := safe_pred 1.
 
   MetaCoq Run (t <- tmQuoteRecTransp safe_pred_full false ;;
-               tmDefinition (s_to_bs "safe_pred_full_syn") t).
+               tmDefinition "safe_pred_full_syn" t).
 
   (* In fully applied case the last argument of [safe_pred] is removed*)
   Redirect "extracted-code/elm-extract/SafePredFull.elm"
@@ -102,11 +102,11 @@ Module ElmExamples.
                Σeta <- run_transforms_list t.1
                  [template_eta (fun _ => None) true true [<%% @safe_pred_partial %%>] (fun _ => false)] ;;
 
-               Certifying.gen_defs_and_proofs (declarations t.1) (declarations Σeta) mpath (s_to_bs "_cert_pass")
+               Certifying.gen_defs_and_proofs (declarations t.1) (declarations Σeta) mpath "_cert_pass"
                                               (KernameSet.singleton <%% @safe_pred_partial %%> )).
 
   MetaCoq Run (t <- tmQuoteRecTransp ElmExtraction_Tests_ElmExtractExamples_ElmExamples_safe_pred_partial_cert_pass false;;
-               tmDefinition (s_to_bs "safe_pred_partial_syn") t).
+               tmDefinition "safe_pred_partial_syn" t).
 
   (* After eta-expansion the main [safe_pred_partial] is guarded by a lambda *)
 
@@ -122,7 +122,7 @@ Module ElmExamples.
   Definition ackermann := Eval compute in ack.
 
   MetaCoq Run (t <- tmQuoteRecTransp ackermann false ;;
-               tmDefinition (s_to_bs "ackermann_syn") t).
+               tmDefinition "ackermann_syn" t).
 
   Redirect "extracted-code/elm-extract/Ackermann.elm"
   Compute wrapped ackermann_syn
@@ -235,7 +235,7 @@ Module ElmExamples.
   Qed.
 
   MetaCoq Run (t <- tmQuoteRecTransp inc_counter false ;;
-               tmDefinition (s_to_bs "inc_counter_syn") t).
+               tmDefinition "inc_counter_syn" t).
 
   Redirect "extracted-code/elm-extract/Increment.elm"
   Compute wrapped inc_counter_syn
@@ -274,7 +274,7 @@ Module ElmExamples.
   Qed.
 
   MetaCoq Run (t <- tmQuoteRecTransp (@head_of_repeat_plus_one) false ;;
-               tmDefinition (s_to_bs "head_of_repeat_plus_one_syn") t).
+               tmDefinition "head_of_repeat_plus_one_syn" t).
 
   Redirect "extracted-code/elm-extract/SafeHead.elm"
   Compute general_wrapped head_of_repeat_plus_one_syn

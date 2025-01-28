@@ -10,15 +10,13 @@ From MetaCoq.Common Require Import Kernames.
 From MetaCoq.Template Require Import Ast.
 From MetaCoq.Template Require Import TemplateMonad.
 From MetaCoq.Utils Require Import utils.
-From Coq Require Import String.
+From MetaCoq.Utils Require Import bytestring.
 
-Local Open Scope string.
+Local Open Scope bs_scope.
 
 Import MCMonadNotation.
 
-Local Notation "'bs_to_s' s" := (bytestring.String.to_string s) (at level 200).
-Local Notation "'s_to_bs' s" := (bytestring.String.of_string s) (at level 200).
-Local Coercion bytestring.String.of_string : string >-> bytestring.String.t.
+
 
 #[local]
 Instance StandardBoxes : ElmPrintConfig :=
@@ -42,7 +40,7 @@ Definition general_extract (p : program) (ignore: list kername)
   entry <- match p.2 with
            | tConst kn _ => Ok kn
            | tInd ind _ => Ok (inductive_mind ind)
-           | _ => Err (s_to_bs "Expected program to be a tConst or tInd")
+           | _ => Err "Expected program to be a tConst or tInd"
            end;;
   Σ <- extract_template_env
          no_check_args
@@ -50,7 +48,7 @@ Definition general_extract (p : program) (ignore: list kername)
          (KernameSet.singleton entry)
          (fun k => existsb (eq_kername k) ignore);;
   let TT_fun kn := option_map snd (List.find (fun '(kn',v) => eq_kername kn kn') TT) in
-  '(_, s) <- map_error (fun x => s_to_bs x) (finish_print (print_env Σ TT_fun));;
+  '(_, s) <- (finish_print (print_env Σ TT_fun));;
   Ok s.
 
 Definition extract (p : program) : result _ _ :=
@@ -355,8 +353,8 @@ Module ex_infix1.
 
   Definition TT : list (kername * string) :=
     [ remap <%% list %%> "List"
-    ; ((<%% list %%>.1, s_to_bs "nil"), "[]")
-    ; ((<%% list %%>.1, s_to_bs "cons"), "(::)")
+    ; ((<%% list %%>.1, "nil"), "[]")
+    ; ((<%% list %%>.1, "cons"), "(::)")
     ].
 
   MetaCoq Quote Recursively Definition ex := map.
@@ -421,7 +419,7 @@ Module type_scheme_ex.
   entry <- match p.2 with
            | tConst kn _ => ret kn
            | tInd ind _ => ret (inductive_mind ind)
-           | _ => tmFail (s_to_bs "Expected program to be a tConst or tInd")
+           | _ => tmFail "Expected program to be a tConst or tInd"
            end;;
   res <- tmEval lazy (extract_template_env
                        no_check_args
@@ -432,7 +430,7 @@ Module type_scheme_ex.
   | Ok Σ =>
     tmPrint Σ;;
     let TT_fun kn := option_map snd (List.find (fun '(kn',v) => eq_kername kn kn') TT) in
-    s <- tmEval lazy (map_error (fun x => s_to_bs x) (finish_print (print_env Σ TT_fun)));;
+    s <- tmEval lazy (finish_print (print_env Σ TT_fun));;
     match s with
     | Ok (_,s) => ret s
     | Err s => tmFail s

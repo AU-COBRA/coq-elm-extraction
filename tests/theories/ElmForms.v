@@ -18,10 +18,11 @@ From MetaCoq.Common Require Import Kernames.
 From MetaCoq.Template Require Import Ast.
 From MetaCoq.Template Require Import TemplateMonad.
 From MetaCoq.Utils Require Import utils.
+From MetaCoq.Utils Require bytestring.
 From Coq Require Import ssrbool.
 From Coq Require Import String.
 
-Open Scope string.
+Local Open Scope string_scope.
 
 Inductive Cmd (A : Type) : Set :=
   none.
@@ -186,6 +187,8 @@ Definition extract_elm_within_coq (should_inline : kername -> bool) :=
                     extract_transforms :=
                       [dearg_transform (fun _ => None) true true true true false] |} |}.
 
+Import bytestring.
+Local Open Scope bs_scope.
 
 Local Instance ElmBoxes : ElmPrintConfig :=
   {| term_box_symbol := "()"; (* the inhabitant of the unit type *)
@@ -204,7 +207,7 @@ Definition general_wrapped (Σ : global_env) (pre post : string)
   let extract_ignore kn := existsb (eq_kername kn) ignore in
   Σ <- extract_template_env_certifying_passes Ok (extract_elm_within_coq should_inline) Σ seeds extract_ignore;;
   let TT_fun kn := option_map snd (List.find (fun '(kn',v) => eq_kername kn kn') TT) in
-  p <- tmEval lazy (map_error (fun x => s_to_bs x) (finish_print (print_env Σ TT_fun))) ;;
+  p <- tmEval lazy (finish_print (print_env Σ TT_fun)) ;;
   match p with
   | Ok (_,s) => tmEval lazy (pre ++ Common.nl ++ s ++ Common.nl ++ post)
   | Err s => tmFail s
@@ -239,19 +242,19 @@ Definition preamble : string :=
    ; ""
   $>.
 
-Notation "'remap_ctor' c1 'of' ind 'to' c2" := ((<%% ind %%>.1, (s_to_bs c1)), c2) (at level 100).
+Notation "'remap_ctor' c1 'of' ind 'to' c2" := ((<%% ind %%>.1, c1), c2) (at level 100).
 
 Notation "'string_literal' s" :=
-    (remap <%% s %%> (concat "" [""""; s; """"])) (at level 20).
+    (remap <%% s %%> (bytestring.String.concat "" [""""; (bytestring.String.of_string s); """"])) (at level 20) : string_scope.
 
 Definition TT :=
   [ remap <%% bool %%> "Bool"
   ; remap <%% negb %%> "not"
 
-  ; remap <%% string %%> "String"
-  ; remap <%% eqb %%> "string_eq"
-  ; remap <%% length %%> "String.length"
-  ; remap_ctor "EmptyString" of string to """"""
+  ; remap <%% Coq.Strings.String.string %%> "String"
+  ; remap <%% Coq.Strings.String.eqb %%> "string_eq"
+  ; remap <%% Coq.Strings.String.length %%> "String.length"
+  ; remap_ctor "EmptyString" of Coq.Strings.String.string to """"""
   ; string_literal emptyNameError
   ; string_literal passwordsDoNotMatchError
   ; string_literal passwordIsTooShortError
@@ -298,6 +301,6 @@ Definition elm_extraction (m : ElmMod) (TT : list (kername * string)) : Template
                   TT.
 
 Time MetaCoq Run (t <- elm_extraction USER_FORM_APP TT;;
-                  tmDefinition (s_to_bs "extracted_app") t).
+                  tmDefinition "extracted_app" t).
 
-Redirect "extracted-code/elm-web-extract/UserList.elm" MetaCoq Run (tmMsg (s_to_bs extracted_app)).
+Redirect "extracted-code/elm-web-extract/UserList.elm" MetaCoq Run (tmMsg extracted_app).
