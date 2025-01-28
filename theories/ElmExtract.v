@@ -1,12 +1,11 @@
 From MetaCoq.Utils Require Import monad_utils.
+From MetaCoq.Utils Require Import bytestring.
 From MetaCoq.Erasure.Typed Require Import Extraction.
 From MetaCoq.Erasure.Typed Require Import ExAst.
 From MetaCoq.Erasure.Typed Require Import ResultMonad.
 From ElmExtraction Require Import StringExtra.
 From ElmExtraction Require Import Common.
 From ElmExtraction Require Import PrettyPrinterMonad.
-From Coq Require Import Ascii.
-From Coq Require Import String.
 From Coq Require Import List.
 
 Import ListNotations.
@@ -22,7 +21,7 @@ Module TUtil := MetaCoq.Template.AstUtils.
 Module EF := MetaCoq.Erasure.ErasureFunction.
 Module Ex := MetaCoq.Erasure.Typed.ExAst.
 
-Local Open Scope string.
+Local Open Scope bs_scope.
 
 Local Definition indent_size := 2.
 
@@ -33,9 +32,6 @@ Context (Σ : Ex.global_env).
 Context (translate : kername -> option string).
 
 Local Open Scope string_scope.
-Local Notation bs_to_s := bytestring.String.to_string.
-Local Notation s_to_bs := bytestring.String.of_string.
-Local Coercion bytestring.String.to_string : bytestring.string >-> string.
 
 Local Infix "^" := String.append.
 
@@ -80,10 +76,10 @@ Definition get_ctor_name (name : kername) : string :=
     (translate name).
 
 Definition get_ident_name (name : ident) : ident :=
-  s_to_bs (uncapitalize (remove_char "'" (replace_char "." "_" name))).
+  uncapitalize (remove_char "'" (replace_char "." "_" name)).
 
 Definition get_ty_arg_name (name : ident) : ident :=
-  s_to_bs (uncapitalize name).
+  uncapitalize name.
 
 Definition lookup_mind (name : kername) : option Ex.mutual_inductive_body :=
   match Ex.lookup_env Σ name with
@@ -162,7 +158,7 @@ Definition fresh (name : ident) (used : list ident) : ident :=
   if existsb (bytestring.String.eqb name) used then
     (fix f n i :=
        match n with
-       | 0 => s_to_bs "unreachable"
+       | 0 => "unreachable"
        | S n =>
          let numbered_name := bytestring.String.append name (MCString.string_of_nat i) in
          if existsb (bytestring.String.eqb numbered_name) used then
@@ -178,14 +174,14 @@ Import BasicAst.
 Definition fresh_ident (name : name) (Γ : list ident) : PrettyPrinter ident :=
   used_names <- get_used_names;;
   match name with
-  | nAnon => ret (fresh (s_to_bs "x") (Γ ++ used_names))
+  | nAnon => ret (fresh "x" (Γ ++ used_names))
   | nNamed name => ret (fresh (get_ident_name name) (Γ ++ used_names))
   end.
 
 Definition fresh_ty_arg_name (name : name) (Γ : list ident) : PrettyPrinter ident :=
   used_names <- get_used_names;;
   match name with
-  | nAnon => ret (fresh (s_to_bs "a") (Γ ++ used_names))
+  | nAnon => ret (fresh "a" (Γ ++ used_names))
   | nNamed name => ret (fresh (get_ty_arg_name name) (Γ ++ used_names))
   end.
 
@@ -267,8 +263,8 @@ Definition get_infix (s : string) : option string :=
   let len := String.length s in
   let begins := substring_count 1 s in
   let ends := substring_from (len - 1) s in
-  if (begins =? "(") && (ends =? ")") then
-    Some (substring 1 (len-2) s)
+  if (bytestring.String.eqb begins "(") && (bytestring.String.eqb ends ")") then
+    Some (String.substring 1 (len-2) s)
   else
     None.
 
@@ -386,7 +382,7 @@ Fixpoint print_term (Γ : list ident) (t : term) : PrettyPrinter unit :=
   | tConstruct ind i [] => print_ind_ctor ind i
   | tConstruct ind i (_ :: _) =>
            printer_fail ("Costructors-as-blocks is not supported: "
-                         ^ bs_to_s (string_of_kername ind.(inductive_mind)))
+                         ^ (string_of_kername ind.(inductive_mind)))
 
   | tCase (ind, npars) discriminee branches =>
     match branches with
@@ -420,7 +416,7 @@ Fixpoint print_term (Γ : list ident) (t : term) : PrettyPrinter unit :=
            match get_infix ctor_name with
            | Some op => print_infix_match_branch print_term op Γ bctx t
            | None =>
-             append (get_ctor_name (fst (inductive_mind ind), s_to_bs ctor_name));;
+             append (get_ctor_name (fst (inductive_mind ind), ctor_name));;
 
              (* In Coq, parameters are not part of branches. But erasure
             adds the parameters to each constructor, so we need to get those
@@ -515,7 +511,7 @@ Definition print_constant
     append_nl
   end;;
 
-  print_define_term [] (s_to_bs ml_name) body print_term;;
+  print_define_term [] ml_name body print_term;;
   pop_indent;;
 
   ret ml_name.
@@ -542,7 +538,6 @@ Definition print_ind_ctor_definition
                        (parenthesize_ind_ctor_ty bty)
                        (print_type Γ bty)) data tt.
 
-Local Open Scope string.
 Import ExAst PrettyPrinterMonad.
 Definition print_mutual_inductive_body
            (kn : kername)
@@ -574,7 +569,7 @@ Definition print_mutual_inductive_body
        append ind_ml_name;;
 
        (* Print type args *)
-       monad_fold_left (fun _ name => append (" " ^ name)) (map bs_to_s Γ) tt;;
+       monad_fold_left (fun _ name => append (" " ^ name)) Γ tt;;
 
        push_indent (col + indent_size);;
 
@@ -609,13 +604,13 @@ Definition print_type_alias
                                          ret (name :: Γ))
                           tvars [];;
   let Γ := rev Γrev in
-  append (String.concat "" (map (fun x => " " ^ x) (map bs_to_s Γ)));;
+  append (String.concat "" (map (fun x => " " ^ x) Γ));;
   append " = ";;
   print_type Γ bt;;
   ret ty_ml_name.
 
 Definition print_env : PrettyPrinter (list (kername * string)) :=
-  monad_iter push_use (map (fun '(kn, _, _) => s_to_bs (get_fun_name kn)) Σ);;
+  monad_iter push_use (map (fun '(kn, _, _) => (get_fun_name kn)) Σ);;
   sig_col <- get_current_line_length;;
   push_indent sig_col;;
 
