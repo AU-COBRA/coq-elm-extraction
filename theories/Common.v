@@ -1,4 +1,3 @@
-From Coq Require Import String.
 From MetaCoq.Erasure.Typed Require Import ResultMonad.
 From MetaCoq.Template Require Import Ast.
 From MetaCoq.Template Require Import LiftSubst.
@@ -7,12 +6,15 @@ From MetaCoq.Template Require Import Loader.
 From MetaCoq.Template Require Import TemplateMonad.
 From MetaCoq.Template Require Import Typing.
 From MetaCoq.Utils Require Import utils.
+From MetaCoq.Utils Require Import bytestring.
 From MetaCoq.Erasure Require EAst.
 From MetaCoq.SafeChecker Require Import PCUICSafeChecker.
 From MetaCoq.SafeChecker Require Import PCUICWfEnvImpl.
+From Coq.Strings Require Import Byte.
 
 Import PCUICErrors.
 Import MCMonadNotation.
+Import String.
 
 (** Extracts a constant name, inductive name or returns None *)
 Definition to_kername (t : Ast.term) : option kername :=
@@ -104,12 +106,10 @@ Definition extract_def_name_exists {A : Type} (a : A) : TemplateMonad kername :=
   | _ => tmFail ("Expected constructor at head, got " ++ string_of_term head)
   end.
 
-Definition remap (kn : kername) (new_name : String.string) : kername * String.string :=
+Definition remap (kn : kername) (new_name : string) : kername * string :=
   (kn, new_name).
 
-(* TODO: port the pretty-printers to use bytestring and use MetaCoq's MCString utils *)
-
-Definition parens (top : bool) (s : String.string) : String.string :=
+Definition parens (top : bool) (s : string) : string :=
   if top then s else "(" ++ s ++ ")".
 
-Definition nl : String.string := String (Ascii.ascii_of_nat 10) EmptyString.
+Definition nl : string := String x0a EmptyString.
