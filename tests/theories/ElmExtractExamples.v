@@ -134,8 +134,22 @@ Module ElmExamples.
            (Preambule "Rev")
            (main_and_test "Expect.equal (rev (Cons 3 (Cons 2 (Cons 1 (Cons 0 Nil))))) (Cons 0 (Cons 1 (Cons 2 (Cons 3 Nil))))").
 
+  (* TODO: remove once 8.20 support is removed.
+    Added because stdlib map definition differ between versions. *)
+  Definition nth := fun A : Type =>
+  fix nth (n : nat) (l : list A) (default : A) {struct l} : A :=
+    match n with
+    | 0 => match l with
+         | [] => default
+           | x :: l' => x
+           end
+    | S m => match l with
+             | [] => default
+             | x :: t => nth m t default
+             end
+    end.
 
-  MetaCoq Quote Recursively Definition nth_syn := List.nth.
+  MetaCoq Quote Recursively Definition nth_syn := nth.
 
   Definition result_nth :=
     <$ "type Nat";
@@ -171,7 +185,16 @@ Module ElmExamples.
   (Preambule "Nth")
   (main_and_test "Expect.equal (nth O (Cons 1 (Cons 0 Nil)) 0) 1").
 
-  MetaCoq Quote Recursively Definition map_syn := List.map.
+  (* TODO: remove once 8.20 support is removed.
+     Added because stdlib map definition differ between versions. *)
+  Definition map := fun (A B : Type) (f : A -> B) =>
+  fix map (l : list A) : list B :=
+    match l with
+    | [] => []
+    | a :: t => f a :: map t
+    end.
+
+  MetaCoq Quote Recursively Definition map_syn := map.
   Definition result_map :=
     <$ "type List a";
        "  = Nil";
@@ -198,7 +221,16 @@ Module ElmExamples.
     extract map_syn = Ok result_map.
   Proof. reflexivity. Qed.
 
-  MetaCoq Quote Recursively Definition foldl_syn := List.fold_left.
+  (* TODO: remove once 8.20 support is removed.
+     Added because stdlib map definition differ between versions. *)
+  Definition fold_left := fun (A B : Type) (f : A -> B -> A) =>
+    fix fold_left (l : list B) (a0 : A) {struct l} : A :=
+      match l with
+      | [] => a0
+      | b :: t => fold_left t (f a0 b)
+      end.
+
+  MetaCoq Quote Recursively Definition foldl_syn := fold_left.
   Definition result_foldl :=
   <$ "type List a";
       "  = Nil";
