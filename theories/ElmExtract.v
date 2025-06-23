@@ -6,7 +6,7 @@ From MetaCoq.Erasure.Typed Require Import ResultMonad.
 From ElmExtraction Require Import StringExtra.
 From ElmExtraction Require Import Common.
 From ElmExtraction Require Import PrettyPrinterMonad.
-From Coq Require Import List.
+From Stdlib Require Import List.
 
 Import ListNotations.
 Import MCMonadNotation.
