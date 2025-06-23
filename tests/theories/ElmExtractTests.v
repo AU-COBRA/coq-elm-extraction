@@ -428,7 +428,7 @@ Module type_scheme_ex.
                        (fun k => existsb (eq_kername k) ignore));;
   match res with
   | Ok Σ =>
-    tmPrint Σ;;
+    (* tmPrint Σ;; *) (* For debug only *)
     let TT_fun kn := option_map snd (List.find (fun '(kn',v) => eq_kername kn kn') TT) in
     s <- tmEval lazy (finish_print (print_env Σ TT_fun));;
     match s with
