@@ -1,7 +1,7 @@
 (** * Ackermann function *)
 
-From Coq Require Import Program.Wf.
-From Coq Require Import Arith.Arith.
+From Stdlib Require Import Program.Wf.
+From Stdlib Require Import Arith.Arith.
 
 (** Taken from here: https://stackoverflow.com/a/44832894 *)
 

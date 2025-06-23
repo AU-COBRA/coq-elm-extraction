@@ -19,8 +19,8 @@ From MetaCoq.Template Require Import Ast.
 From MetaCoq.Template Require Import TemplateMonad.
 From MetaCoq.Utils Require Import utils.
 From MetaCoq.Utils Require bytestring.
-From Coq Require Import ssrbool.
-From Coq Require Import String.
+From Stdlib Require Import ssrbool.
+From Stdlib Require Import String.
 
 Local Open Scope string_scope.
 
@@ -251,10 +251,10 @@ Definition TT :=
   [ remap <%% bool %%> "Bool"
   ; remap <%% negb %%> "not"
 
-  ; remap <%% Coq.Strings.String.string %%> "String"
-  ; remap <%% Coq.Strings.String.eqb %%> "string_eq"
-  ; remap <%% Coq.Strings.String.length %%> "String.length"
-  ; remap_ctor "EmptyString" of Coq.Strings.String.string to """"""
+  ; remap <%% Stdlib.Strings.String.string %%> "String"
+  ; remap <%% Stdlib.Strings.String.eqb %%> "string_eq"
+  ; remap <%% Stdlib.Strings.String.length %%> "String.length"
+  ; remap_ctor "EmptyString" of Stdlib.Strings.String.string to """"""
   ; string_literal emptyNameError
   ; string_literal passwordsDoNotMatchError
   ; string_literal passwordIsTooShortError
