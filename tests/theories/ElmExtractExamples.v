@@ -9,21 +9,21 @@
     directory is different. *)
 From ElmExtraction Require Import StringExtra.
 From ElmExtraction Require Import Common.
-From MetaCoq.Erasure.Typed Require Import Extraction.
+From MetaRocq.Erasure.Typed Require Import Extraction.
 From ElmExtraction Require Import ElmExtract.
 From ElmExtraction Require Import PrettyPrinterMonad.
-From MetaCoq.Erasure.Typed Require Import ResultMonad.
-From MetaCoq.Erasure.Typed Require Import Optimize.
-From MetaCoq.Erasure.Typed Require Import CertifyingEta.
+From MetaRocq.Erasure.Typed Require Import ResultMonad.
+From MetaRocq.Erasure.Typed Require Import Optimize.
+From MetaRocq.Erasure.Typed Require Import CertifyingEta.
 From ElmExtraction.Tests Require Import ElmExtractTests.
 From ElmExtraction.Tests Require Import Ack.
-From MetaCoq.Common Require Import Kernames.
-From MetaCoq.Template Require Import Ast.
-From MetaCoq.Template Require Import TemplateMonad.
-From MetaCoq.Utils Require Import utils.
-From MetaCoq.Utils Require Import bytestring.
+From MetaRocq.Common Require Import Kernames.
+From MetaRocq.Template Require Import Ast.
+From MetaRocq.Template Require Import TemplateMonad.
+From MetaRocq.Utils Require Import utils.
+From MetaRocq.Utils Require Import bytestring.
 
-Import MCMonadNotation.
+Import MRMonadNotation.
 Local Open Scope bs_scope.
 
 #[local]
@@ -77,7 +77,7 @@ Module ElmExamples.
       Common.parens false ("Debug.toString " ++ Common.parens false test) ++ Common.nl ++
     "suite = Test.test (Debug.toString 1)" ++ Common.parens false ("\ _ -> " ++ test).
 
-  (* [safe_pred] example is inspired by Letozey's A New Extraction for Coq *)
+  (* [safe_pred] example is inspired by Letozey's A New Extraction for Rocq *)
   Definition safe_pred (n:nat) (not_zero : O<>n) : {p :nat | n=(S p)} :=
     match n as n0 return (n0 = n -> _ -> _ )with
     | O => fun heq h => False_rect _ (ltac:(cbn; intros; easy))
@@ -87,7 +87,7 @@ Module ElmExamples.
   Program Definition safe_pred_full := safe_pred 1 (ltac:(easy)).
   Program Definition safe_pred_partial := safe_pred 1.
 
-  MetaCoq Run (t <- tmQuoteRecTransp safe_pred_full false ;;
+  MetaRocq Run (t <- tmQuoteRecTransp safe_pred_full false ;;
                tmDefinition "safe_pred_full_syn" t).
 
   (* In fully applied case the last argument of [safe_pred] is removed*)
@@ -97,7 +97,7 @@ Module ElmExamples.
     (main_and_test "Expect.equal safe_pred_full (Exist O)")
     [] [].
 
-  MetaCoq Run (t <- tmQuoteRecTransp safe_pred_partial false ;;
+  MetaRocq Run (t <- tmQuoteRecTransp safe_pred_partial false ;;
                mpath <- tmCurrentModPath tt;;
                Σeta <- run_transforms_list t.1
                  [template_eta (fun _ => None) true true [<%% @safe_pred_partial %%>] (fun _ => false)] ;;
@@ -105,7 +105,7 @@ Module ElmExamples.
                Certifying.gen_defs_and_proofs (declarations t.1) (declarations Σeta) mpath "_cert_pass"
                                               (KernameSet.singleton <%% @safe_pred_partial %%> )).
 
-  MetaCoq Run (t <- tmQuoteRecTransp ElmExtraction_Tests_ElmExtractExamples_ElmExamples_safe_pred_partial_cert_pass false;;
+  MetaRocq Run (t <- tmQuoteRecTransp ElmExtraction_Tests_ElmExtractExamples_ElmExamples_safe_pred_partial_cert_pass false;;
                tmDefinition "safe_pred_partial_syn" t).
 
   (* After eta-expansion the main [safe_pred_partial] is guarded by a lambda *)
@@ -117,11 +117,11 @@ Module ElmExamples.
           [] [].
 
 
-  MetaCoq Quote Recursively Definition rev_syn := List.rev.
+  MetaRocq Quote Recursively Definition rev_syn := List.rev.
 
   Definition ackermann := Eval compute in ack.
 
-  MetaCoq Run (t <- tmQuoteRecTransp ackermann false ;;
+  MetaRocq Run (t <- tmQuoteRecTransp ackermann false ;;
                tmDefinition "ackermann_syn" t).
 
   Redirect "extracted-code/elm-extract/Ackermann.elm"
@@ -134,7 +134,7 @@ Module ElmExamples.
            (Preambule "Rev")
            (main_and_test "Expect.equal (rev (Cons 3 (Cons 2 (Cons 1 (Cons 0 Nil))))) (Cons 0 (Cons 1 (Cons 2 (Cons 3 Nil))))").
 
-  MetaCoq Quote Recursively Definition nth_syn := nth.
+  MetaRocq Quote Recursively Definition nth_syn := nth.
 
   Definition result_nth :=
     <$ "type Nat";
@@ -170,7 +170,7 @@ Module ElmExamples.
   (Preambule "Nth")
   (main_and_test "Expect.equal (nth O (Cons 1 (Cons 0 Nil)) 0) 1").
 
-  MetaCoq Quote Recursively Definition map_syn := map.
+  MetaRocq Quote Recursively Definition map_syn := map.
   Definition result_map :=
     <$ "type List a";
        "  = Nil";
@@ -197,7 +197,7 @@ Module ElmExamples.
     extract map_syn = Ok result_map.
   Proof. vm_compute. reflexivity. Qed.
 
-  MetaCoq Quote Recursively Definition foldl_syn := fold_left.
+  MetaRocq Quote Recursively Definition foldl_syn := fold_left.
   Definition result_foldl :=
   <$ "type List a";
       "  = Nil";
@@ -233,7 +233,7 @@ Module ElmExamples.
     rewrite Nat.ltb_lt in *. lia.
   Qed.
 
-  MetaCoq Run (t <- tmQuoteRecTransp inc_counter false ;;
+  MetaRocq Run (t <- tmQuoteRecTransp inc_counter false ;;
                tmDefinition "inc_counter_syn" t).
 
   Redirect "extracted-code/elm-extract/Increment.elm"
@@ -241,7 +241,7 @@ Module ElmExamples.
          (Preambule "Increment")
          (main_and_test "Expect.equal (inc_counter O (Exist (S O))) (Exist (S O))").
 
-  MetaCoq Quote Recursively Definition last_syn := List.last.
+  MetaRocq Quote Recursively Definition last_syn := List.last.
 
   Redirect "extracted-code/elm-extract/Last.elm"
   Compute wrapped last_syn
@@ -272,7 +272,7 @@ Module ElmExamples.
     intros. cbn. lia.
   Qed.
 
-  MetaCoq Run (t <- tmQuoteRecTransp (@head_of_repeat_plus_one) false ;;
+  MetaRocq Run (t <- tmQuoteRecTransp (@head_of_repeat_plus_one) false ;;
                tmDefinition "head_of_repeat_plus_one_syn" t).
 
   Redirect "extracted-code/elm-extract/SafeHead.elm"

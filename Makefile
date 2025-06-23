@@ -1,35 +1,35 @@
 all: theory tests
 .PHONY: all
 
-CoqMakefile: _CoqProject
-	coq_makefile -f _CoqProject -o CoqMakefile
+RocqMakefile: _CoqProject
+	rocq makefile -f _CoqProject -o RocqMakefile
 
-theory: CoqMakefile
-	+@make -f CoqMakefile
+theory: RocqMakefile
+	+@make -f RocqMakefile
 .PHONY: theory
 
 tests: theory
 	+make -C tests
 .PHONY: tests
 
-clean: CoqMakefile
-	+@make -f CoqMakefile clean
-	rm -f CoqMakefile
+clean: RocqMakefile
+	+@make -f RocqMakefile clean
+	rm -f RocqMakefile
 	+@make -C tests clean
 	rm -rf docs
 .PHONY: clean
 
-install: CoqMakefile
-	+@make -f CoqMakefile install
+install: RocqMakefile
+	+@make -f RocqMakefile install
 .PHONY: install
 
-uninstall: CoqMakefile
-	+@make -f CoqMakefile uninstall
+uninstall: RocqMakefile
+	+@make -f RocqMakefile uninstall
 .PHONY: uninstall
 
-# Forward most things to Coq makefile. Use 'force' to make this phony.
-%: CoqMakefile force
-	+@make -f CoqMakefile $@
+# Forward most things to Rocq makefile. Use 'force' to make this phony.
+%: RocqMakefile force
+	+@make -f RocqMakefile $@
 force: ;
 all: theory
 
@@ -39,10 +39,12 @@ Makefile _CoqProject: ;
 html: all
 	rm -rf docs
 	mkdir docs
-	coqdoc --html --interpolate --parse-comments \
+	rocq doc --html --interpolate --parse-comments \
 		--with-header extra/header.html --with-footer extra/footer.html \
 		--toc \
-		--external https://metacoq.github.io/html MetaCoq \
+		--coqlib_url https://rocq-prover.org/doc/V9.0.0/corelib \
+    	--external https://rocq-prover.org/doc/V9.0.0/stdlib Stdlib \
+		--external https://metarocq.github.io/html MetaRocq \
 		-R theories ElmExtraction \
 		-R tests/theories ElmExtraction.Tests \
 		-d docs `find . -type f \( -wholename "*theories/*" -o -wholename "*test/*" \) -name "*.v" ! -wholename "./_opam/*"`
