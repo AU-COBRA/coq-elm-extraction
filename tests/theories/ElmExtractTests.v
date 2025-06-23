@@ -357,15 +357,6 @@ Module ex_infix1.
     ; ((<%% list %%>.1, "cons"), "(::)")
     ].
 
-  (* TODO: remove once 8.20 support is removed.
-     Added because stdlib map definition differ between versions. *)
-  Definition map := fun (A B : Type) (f : A -> B) =>
-    fix map (l : list A) : list B :=
-      match l with
-      | [] => []
-      | a :: t => f a :: map t
-      end.
-
   MetaCoq Quote Recursively Definition ex := map.
 
   Example test :
@@ -379,8 +370,8 @@ Module ex_infix1.
       "      case l of";
       "        [] ->";
       "          []";
-      "        a :: t ->";
-      "          (::) (f a) (map2 t)";
+      "        a :: l2 ->";
+      "          (::) (f a) (map2 l2)";
       "  in";
       "  map2" $>.
   Proof. vm_compute. reflexivity. Qed.

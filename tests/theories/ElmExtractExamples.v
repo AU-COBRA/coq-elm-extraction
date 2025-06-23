@@ -134,21 +134,6 @@ Module ElmExamples.
            (Preambule "Rev")
            (main_and_test "Expect.equal (rev (Cons 3 (Cons 2 (Cons 1 (Cons 0 Nil))))) (Cons 0 (Cons 1 (Cons 2 (Cons 3 Nil))))").
 
-  (* TODO: remove once 8.20 support is removed.
-    Added because stdlib map definition differ between versions. *)
-  Definition nth := fun A : Type =>
-  fix nth (n : nat) (l : list A) (default : A) {struct l} : A :=
-    match n with
-    | 0 => match l with
-         | [] => default
-           | x :: l' => x
-           end
-    | S m => match l with
-             | [] => default
-             | x :: t => nth m t default
-             end
-    end.
-
   MetaCoq Quote Recursively Definition nth_syn := nth.
 
   Definition result_nth :=
@@ -173,8 +158,8 @@ Module ElmExamples.
        "      case l of";
        "        Nil ->";
        "          default";
-       "        Cons x t ->";
-       "          nth m t default" $>.
+       "        Cons x l2 ->";
+       "          nth m l2 default" $>.
 
   Example ElmExamples_nth :
     extract nth_syn = Ok result_nth.
@@ -184,15 +169,6 @@ Module ElmExamples.
   Compute wrapped nth_syn
   (Preambule "Nth")
   (main_and_test "Expect.equal (nth O (Cons 1 (Cons 0 Nil)) 0) 1").
-
-  (* TODO: remove once 8.20 support is removed.
-     Added because stdlib map definition differ between versions. *)
-  Definition map := fun (A B : Type) (f : A -> B) =>
-  fix map (l : list A) : list B :=
-    match l with
-    | [] => []
-    | a :: t => f a :: map t
-    end.
 
   MetaCoq Quote Recursively Definition map_syn := map.
   Definition result_map :=
@@ -207,8 +183,8 @@ Module ElmExamples.
        "      case l of";
        "        Nil ->";
        "          Nil";
-       "        Cons a t ->";
-       "          Cons (f a) (map2 t)";
+       "        Cons a l2 ->";
+       "          Cons (f a) (map2 l2)";
        "  in";
        "  map2" $>.
 
@@ -219,16 +195,7 @@ Module ElmExamples.
 
   Example ElmList_map :
     extract map_syn = Ok result_map.
-  Proof. reflexivity. Qed.
-
-  (* TODO: remove once 8.20 support is removed.
-     Added because stdlib map definition differ between versions. *)
-  Definition fold_left := fun (A B : Type) (f : A -> B -> A) =>
-    fix fold_left (l : list B) (a0 : A) {struct l} : A :=
-      match l with
-      | [] => a0
-      | b :: t => fold_left t (f a0 b)
-      end.
+  Proof. vm_compute. reflexivity. Qed.
 
   MetaCoq Quote Recursively Definition foldl_syn := fold_left.
   Definition result_foldl :=
@@ -243,8 +210,8 @@ Module ElmExamples.
       "      case l of";
       "        Nil ->";
       "          a0";
-      "        Cons b t ->";
-      "          fold_left2 t (f a0 b)";
+      "        Cons b l2 ->";
+      "          fold_left2 l2 (f a0 b)";
       "  in";
       "  fold_left2" $>.
 
@@ -255,7 +222,7 @@ Module ElmExamples.
 
   Example ElmList_foldl :
     extract foldl_syn = Ok result_foldl.
-  Proof. reflexivity. Qed.
+  Proof. vm_compute. reflexivity. Qed.
 
   Local Open Scope nat.
   Program Definition inc_counter (st : nat) (inc : {z : nat | 0 <? z}) :
