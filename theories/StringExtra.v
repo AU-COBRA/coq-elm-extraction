@@ -1,7 +1,7 @@
 From Stdlib Require Import List.
 From Stdlib Require Import NArith.
 From Stdlib.Strings Require Import Byte.
-From MetaCoq.Utils Require Import bytestring.
+From MetaRocq.Utils Require Import bytestring.
 
 Import String.
 Import ListNotations.
