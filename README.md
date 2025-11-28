@@ -15,7 +15,7 @@ A framework for extracting Rocq programs to Elm.
   - Bas Spitters (initial)
   - Eske Hoy Nielsen
 - License: [MIT](LICENSE)
-- Compatible Coq versions: 8.17 or later
+- Compatible Rocq versions: 9.0 or later
 - Additional dependencies: MetaRocq
 - Rocq namespace: `ElmExtraction`
 - Related publication(s):
