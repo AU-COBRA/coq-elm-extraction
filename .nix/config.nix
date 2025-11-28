@@ -12,6 +12,13 @@
     coqPackages.coq.override.version = "9.0";
     coqPackages.metarocq.override.version = "1.4-9.0";
   };
+  bundles."9.1" = {
+    coqPackages.coq.override.version = "9.1";
+    coqPackages.metarocq.override.version = "1.4-9.1";
+  };
+
+  bundles."9.0".push-branches = ["master"];
+  bundles."9.1".push-branches = ["master"];
 
   ## Cachix caches to use in CI
   cachix.coq = {};

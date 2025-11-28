@@ -14,7 +14,7 @@ bug-reports: "https://github.com/AU-COBRA/coq-elm-extraction/issues"
 doc: "https://au-cobra.github.io/coq-elm-extraction/toc.html"
 
 depends: [
-  "rocq-core" {>= "9.0" & < "9.1~"}
+  "rocq-core" {>= "9.0" & < "9.2~"}
   "rocq-stdlib" {>= "9.0" & < "9.1~"}
   "rocq-metarocq-utils" {>= "1.4"}
   "rocq-metarocq-common" {>= "1.4"}
