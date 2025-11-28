@@ -6,15 +6,27 @@
 
   attribute = "ElmExtraction";
 
+  no-rocq-yet = true;
+
   default-bundle = "9.0";
 
   bundles."9.0" = {
-    coqPackages.coq.override.version = "9.0";
-    coqPackages.metarocq.override.version = "1.4-9.0";
+    coqPackages = {
+      coq.override.version = "9.0.1";
+      metarocq.override.version = "1.4-9.0.1";
+    };
+    rocqPackages = {
+      rocq-core.override.version = "9.0.1";
+    };
   };
   bundles."9.1" = {
-    coqPackages.coq.override.version = "9.1";
-    coqPackages.metarocq.override.version = "1.4-9.1";
+    coqPackages = {
+      coq.override.version = "9.1";
+      metarocq.override.version = "1.4-9.1";
+    };
+    rocqPackages = {
+      rocq-core.override.version = "9.1";
+    };
   };
 
   bundles."9.0".push-branches = ["master"];
