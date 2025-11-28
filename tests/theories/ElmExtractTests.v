@@ -1,20 +1,20 @@
 (** * Tests for extraction to Elm *)
 From ElmExtraction Require Import Common.
-From MetaCoq.Erasure.Typed Require Import Extraction.
+From MetaRocq.Erasure.Typed Require Import Extraction.
 From ElmExtraction Require Import ElmExtract.
 From ElmExtraction Require Import PrettyPrinterMonad.
-From MetaCoq.Erasure.Typed Require Import Optimize.
-From MetaCoq.Erasure.Typed Require Import ResultMonad.
+From MetaRocq.Erasure.Typed Require Import Optimize.
+From MetaRocq.Erasure.Typed Require Import ResultMonad.
 From ElmExtraction Require Import StringExtra.
-From MetaCoq.Common Require Import Kernames.
-From MetaCoq.Template Require Import Ast.
-From MetaCoq.Template Require Import TemplateMonad.
-From MetaCoq.Utils Require Import utils.
-From MetaCoq.Utils Require Import bytestring.
+From MetaRocq.Common Require Import Kernames.
+From MetaRocq.Template Require Import Ast.
+From MetaRocq.Template Require Import TemplateMonad.
+From MetaRocq.Utils Require Import utils.
+From MetaRocq.Utils Require Import bytestring.
 
 Local Open Scope bs_scope.
 
-Import MCMonadNotation.
+Import MRMonadNotation.
 
 
 
@@ -57,7 +57,7 @@ Definition extract (p : program) : result _ _ :=
 Module ex1.
   Definition foo : { n : nat | n = 0 } := exist 0 eq_refl.
   Definition bar := proj1_sig foo.
-  MetaCoq Quote Recursively Definition ex1 := bar.
+  MetaRocq Quote Recursively Definition ex1 := bar.
 
   Example ex1_test :
     extract ex1 = Ok <$
@@ -88,7 +88,7 @@ Module ex2.
   Definition only_in_type := 5.
   Definition foo : { n : nat | only_in_type = 5 } := exist 0 eq_refl.
   Definition bar := proj1_sig foo.
-  MetaCoq Quote Recursively Definition ex2 := bar.
+  MetaRocq Quote Recursively Definition ex2 := bar.
   Example ex2_test :
     extract ex2 = Ok <$
       "type Sig a";
@@ -119,7 +119,7 @@ Module ex3.
   Definition bar (p : 5 = 5) (n : nat) := n.
   (* bar must be eta expanded in the following *)
   Definition baz := foo bar.
-  MetaCoq Quote Recursively Definition ex3 := baz.
+  MetaRocq Quote Recursively Definition ex3 := baz.
 
   Example ex3_test :
     extract ex3 = Ok <$
@@ -143,7 +143,7 @@ End ex3.
 
 Module ex4.
   Definition foo : {0 = 0} + {0 <> 0} := left eq_refl.
-  MetaCoq Quote Recursively Definition ex4 := foo.
+  MetaRocq Quote Recursively Definition ex4 := foo.
 
   Example ex4_test :
     extract ex4 = Ok <$
@@ -160,7 +160,7 @@ End ex4.
 Module ex5.
   (* Using normal sum means it cannot be deboxed away *)
   Definition foo : (0 = 0) + (0 <> 0) := inl eq_refl.
-  MetaCoq Quote Recursively Definition ex5 := foo.
+  MetaRocq Quote Recursively Definition ex5 := foo.
 
   Example ex5_test :
     extract ex5 = Ok <$
@@ -179,7 +179,7 @@ Module ex6.
   Definition bar (m : nat) (p q : 5 = 5) (n : nat) := m + n.
   (* bar must be eta expanded twice and m and n need to be lifted *)
   Definition baz := (fun m n => foo (bar (m + n))) 0.
-  MetaCoq Quote Recursively Definition ex6 := baz.
+  MetaRocq Quote Recursively Definition ex6 := baz.
 
   Example ex6_test :
     extract ex6 = Ok <$
@@ -214,7 +214,7 @@ Module ex7.
   Definition foo (n : nat) (x := 0) (p : x = 0) (m : nat) :=
     match n with 0 => m | _ => n end.
   Definition bar := foo 1 eq_refl 0.
-  MetaCoq Quote Recursively Definition ex7 := bar.
+  MetaRocq Quote Recursively Definition ex7 := bar.
 
   Example ex7_test :
     extract ex7 = Ok <$
@@ -245,7 +245,7 @@ Module ex8.
   Inductive ManyParamsInd (A : Type) (P : Prop) (Q : Prop) (B : Type) :=
     MPIConstr : P -> A -> B -> ManyParamsInd A P Q B.
 
-  MetaCoq Quote Recursively Definition ex8 := ManyParamsInd.
+  MetaRocq Quote Recursively Definition ex8 := ManyParamsInd.
 
   Example ex8_test :
     extract ex8 = Ok <$
@@ -260,7 +260,7 @@ Module ex9.
     MPINAConstr1 : P -> A -> B -> ManyParamsIndNonArity A P Q B
   | MPINAConstr2 : P -> list P -> A*B -> ManyParamsIndNonArity A P Q B.
 
-  MetaCoq Quote Recursively Definition ex9 := ManyParamsIndNonArity.
+  MetaRocq Quote Recursively Definition ex9 := ManyParamsIndNonArity.
 
   Example ManyParamsIndNonArity_test:
     extract ex9 = Ok <$
@@ -280,7 +280,7 @@ End ex9.
 Module ex10.
   (* Debox axiom *)
   Definition foo (x : { n : nat | n > 0 }) := proj1_sig x.
-  MetaCoq Quote Recursively Definition ex10 := foo.
+  MetaRocq Quote Recursively Definition ex10 := foo.
 
   Example ex10_test :
     general_extract ex10 [<%% @proj1_sig %%>] [] = Ok <$
@@ -298,7 +298,7 @@ Module ex10.
 End ex10.
 
 Module ex11.
-  MetaCoq Quote Recursively Definition ex11 := Monad.
+  MetaRocq Quote Recursively Definition ex11 := Monad.
   Example Monad_test :
     extract ex11 = Ok <$
     "type Monad m";
@@ -309,7 +309,7 @@ End ex11.
 Module ex12.
   Definition idT (T : Type) := T.
   Definition weird_id {T} (i : idT T) := i.
-  MetaCoq Quote Recursively Definition ex := @weird_id.
+  MetaRocq Quote Recursively Definition ex := @weird_id.
   Example test :
     extract ex = Ok <$
     "type alias IdT t = t";
@@ -326,7 +326,7 @@ Module ex13.
                                            | Some x => x
                                            | None => 0
                                            end.
-  MetaCoq Quote Recursively Definition ex := unwrap.
+  MetaRocq Quote Recursively Definition ex := unwrap.
   Example test :
     extract ex = Ok <$
       "type Option a";
@@ -357,16 +357,7 @@ Module ex_infix1.
     ; ((<%% list %%>.1, "cons"), "(::)")
     ].
 
-  (* TODO: remove once 8.20 support is removed.
-     Added because stdlib map definition differ between versions. *)
-  Definition map := fun (A B : Type) (f : A -> B) =>
-    fix map (l : list A) : list B :=
-      match l with
-      | [] => []
-      | a :: t => f a :: map t
-      end.
-
-  MetaCoq Quote Recursively Definition ex := map.
+  MetaRocq Quote Recursively Definition ex := map.
 
   Example test :
     general_extract ex (List.map fst TT) TT = Ok <$
@@ -379,8 +370,8 @@ Module ex_infix1.
       "      case l of";
       "        [] ->";
       "          []";
-      "        a :: t ->";
-      "          (::) (f a) (map2 t)";
+      "        a :: l2 ->";
+      "          (::) (f a) (map2 l2)";
       "  in";
       "  map2" $>.
   Proof. vm_compute. reflexivity. Qed.
@@ -395,7 +386,7 @@ Module recursor_ex.
     @test = @map.
   Proof. reflexivity. Qed.
 
-  MetaCoq Quote Recursively Definition ex := @test.
+  MetaRocq Quote Recursively Definition ex := @test.
 
   Example ex_test :
     general_extract ex [] [] = Ok <$
@@ -437,7 +428,7 @@ Module type_scheme_ex.
                        (fun k => existsb (eq_kername k) ignore));;
   match res with
   | Ok Σ =>
-    tmPrint Σ;;
+    (* tmPrint Σ;; *) (* For debug only *)
     let TT_fun kn := option_map snd (List.find (fun '(kn',v) => eq_kername kn kn') TT) in
     s <- tmEval lazy (finish_print (print_env Σ TT_fun));;
     match s with
@@ -452,7 +443,7 @@ Module type_scheme_ex.
 
   Definition Arrow (A B : Type) := A -> B.
 
-  MetaCoq Quote Recursively Definition Arrow_syn := Arrow.
+  MetaRocq Quote Recursively Definition Arrow_syn := Arrow.
 
   Example Arrow_test :
     general_extract Arrow_syn [] [] =
@@ -461,9 +452,9 @@ Module type_scheme_ex.
 
   Definition Triple (A B C : Type) := A * B * C.
 
-  MetaCoq Quote Recursively Definition Triple_syn := Triple.
+  MetaRocq Quote Recursively Definition Triple_syn := Triple.
 
-  MetaCoq Run (general_extract_tc Triple_syn [] []).
+  MetaRocq Run (general_extract_tc Triple_syn [] []).
 
   Example Triple_test :
     general_extract Triple_syn [] [] = Ok <$
@@ -483,13 +474,13 @@ Module type_scheme_ex.
   Definition Sch3_applied :=
     (fun X => X true -> X false) (fun b => if b then nat else bool).
 
-  MetaCoq Quote Recursively Definition Sch3_syn := Sch3.
+  MetaRocq Quote Recursively Definition Sch3_syn := Sch3.
 
   Example Sch3_test :
     general_extract Sch3_syn [] [] = Ok "type alias Sch3 x = x -> x".
   Proof. vm_compute. reflexivity. Qed.
 
-  MetaCoq Quote Recursively Definition Sch3_applied_syn := Sch3_applied.
+  MetaRocq Quote Recursively Definition Sch3_applied_syn := Sch3_applied.
 
   (* In this case, the application reduces to a type with no type parameters *)
   Example Sch3_applied_test :
@@ -514,9 +505,9 @@ Module type_scheme_ex.
 
   Program Definition singleton_vec (n : nat) : vec nat 1 := [n].
 
-  MetaCoq Quote Recursively Definition singleton_vec_syn := singleton_vec.
+  MetaRocq Quote Recursively Definition singleton_vec_syn := singleton_vec.
 
-  MetaCoq Run (general_extract_tc singleton_vec_syn [] []).
+  MetaRocq Run (general_extract_tc singleton_vec_syn [] []).
 
   Example singleton_vec_test:
     general_extract singleton_vec_syn [] [] = Ok <$

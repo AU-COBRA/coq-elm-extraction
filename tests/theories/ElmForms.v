@@ -1,26 +1,26 @@
 (** * Elm web app example *)
 
 (** We implement a simple web application allowing for adding users to
-a list after validating the input data. We use the Coq version of
+a list after validating the input data. We use the Rocq version of
 refinement types (a type with a predicate) to express the fact that
 the list of users contains only valid data. *)
 
 From ElmExtraction Require Import Common.
 From ElmExtraction Require Import PrettyPrinterMonad.
 From ElmExtraction Require Import ElmExtract.
-From MetaCoq.Erasure.Typed Require Import Extraction.
-From MetaCoq.Erasure.Typed Require Import Optimize.
-From MetaCoq.Erasure.Typed Require Import CertifyingInlining.
-From MetaCoq.Erasure.Typed Require Import ResultMonad.
+From MetaRocq.Erasure.Typed Require Import Extraction.
+From MetaRocq.Erasure.Typed Require Import Optimize.
+From MetaRocq.Erasure.Typed Require Import CertifyingInlining.
+From MetaRocq.Erasure.Typed Require Import ResultMonad.
 From ElmExtraction Require Import StringExtra.
 From ElmExtraction.Tests Require Import RecordUpdate.
-From MetaCoq.Common Require Import Kernames.
-From MetaCoq.Template Require Import Ast.
-From MetaCoq.Template Require Import TemplateMonad.
-From MetaCoq.Utils Require Import utils.
-From MetaCoq.Utils Require bytestring.
-From Coq Require Import ssrbool.
-From Coq Require Import String.
+From MetaRocq.Common Require Import Kernames.
+From MetaRocq.Template Require Import Ast.
+From MetaRocq.Template Require Import TemplateMonad.
+From MetaRocq.Utils Require Import utils.
+From MetaRocq.Utils Require bytestring.
+From Stdlib Require Import ssrbool.
+From Stdlib Require Import String.
 
 Local Open Scope string_scope.
 
@@ -73,9 +73,9 @@ Record Model :=
 
 
 (** We derive setters for the records in order to use convenient record update syntax *)
-MetaCoq Run (make_setters Entry).
-MetaCoq Run (make_setters StoredEntry).
-MetaCoq Run (make_setters Model).
+MetaRocq Run (make_setters Entry).
+MetaRocq Run (make_setters StoredEntry).
+MetaRocq Run (make_setters Model).
 
 (** Messages for updating the model according to the current user input *)
 Inductive Msg :=
@@ -179,7 +179,7 @@ Program Definition initModel : Model * Cmd StorageMsg :=
        ; currentEntry := Build_Entry "" "" "" |} in
   (entry, none).
 
-Definition extract_elm_within_coq (should_inline : kername -> bool) :=
+Definition extract_elm_within_rocq (should_inline : kername -> bool) :=
 {| check_wf_env_func := fun Σ : PCUICAst.PCUICEnvironment.global_env =>
                           Ok (assume_env_wellformed Σ);
    template_transforms := [CertifyingInlining.template_inline should_inline ];
@@ -197,7 +197,7 @@ Local Instance ElmBoxes : ElmPrintConfig :=
      false_elim_def := "false_rec ()";
      print_full_names := false |}.
 
-Import MCMonadNotation.
+Import MRMonadNotation.
 
 Definition general_wrapped (Σ : global_env) (pre post : string)
            (seeds : KernameSet.t)
@@ -205,7 +205,7 @@ Definition general_wrapped (Σ : global_env) (pre post : string)
            (ignore: list kername) (TT : list (kername * string)) : TemplateMonad _ :=
   let should_inline kn := existsb (eq_kername kn) to_inline in
   let extract_ignore kn := existsb (eq_kername kn) ignore in
-  Σ <- extract_template_env_certifying_passes Ok (extract_elm_within_coq should_inline) Σ seeds extract_ignore;;
+  Σ <- extract_template_env_certifying_passes Ok (extract_elm_within_rocq should_inline) Σ seeds extract_ignore;;
   let TT_fun kn := option_map snd (List.find (fun '(kn',v) => eq_kername kn kn') TT) in
   p <- tmEval lazy (finish_print (print_env Σ TT_fun)) ;;
   match p with
@@ -251,10 +251,10 @@ Definition TT :=
   [ remap <%% bool %%> "Bool"
   ; remap <%% negb %%> "not"
 
-  ; remap <%% Coq.Strings.String.string %%> "String"
-  ; remap <%% Coq.Strings.String.eqb %%> "string_eq"
-  ; remap <%% Coq.Strings.String.length %%> "String.length"
-  ; remap_ctor "EmptyString" of Coq.Strings.String.string to """"""
+  ; remap <%% Stdlib.Strings.String.string %%> "String"
+  ; remap <%% Stdlib.Strings.String.eqb %%> "string_eq"
+  ; remap <%% Stdlib.Strings.String.length %%> "String.length"
+  ; remap_ctor "EmptyString" of Stdlib.Strings.String.string to """"""
   ; string_literal emptyNameError
   ; string_literal passwordsDoNotMatchError
   ; string_literal passwordIsTooShortError
@@ -300,7 +300,7 @@ Definition elm_extraction (m : ElmMod) (TT : list (kername * string)) : Template
                   (map fst TT)
                   TT.
 
-Time MetaCoq Run (t <- elm_extraction USER_FORM_APP TT;;
+Time MetaRocq Run (t <- elm_extraction USER_FORM_APP TT;;
                   tmDefinition "extracted_app" t).
 
-Redirect "extracted-code/elm-web-extract/UserList.elm" MetaCoq Run (tmMsg extracted_app).
+Redirect "extracted-code/elm-web-extract/UserList.elm" MetaRocq Run (tmMsg extracted_app).

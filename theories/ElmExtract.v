@@ -1,25 +1,25 @@
-From MetaCoq.Utils Require Import monad_utils.
-From MetaCoq.Utils Require Import bytestring.
-From MetaCoq.Erasure.Typed Require Import Extraction.
-From MetaCoq.Erasure.Typed Require Import ExAst.
-From MetaCoq.Erasure.Typed Require Import ResultMonad.
+From MetaRocq.Utils Require Import monad_utils.
+From MetaRocq.Utils Require Import bytestring.
+From MetaRocq.Erasure.Typed Require Import Extraction.
+From MetaRocq.Erasure.Typed Require Import ExAst.
+From MetaRocq.Erasure.Typed Require Import ResultMonad.
 From ElmExtraction Require Import StringExtra.
 From ElmExtraction Require Import Common.
 From ElmExtraction Require Import PrettyPrinterMonad.
-From Coq Require Import List.
+From Stdlib Require Import List.
 
 Import ListNotations.
-Import MCMonadNotation.
+Import MRMonadNotation.
 Import PrettyPrinterMonad.
 
-Module P := MetaCoq.PCUIC.PCUICAst.
-Module PT := MetaCoq.PCUIC.PCUICTyping.
-Module T2P := MetaCoq.TemplatePCUIC.TemplateToPCUIC.
-Module E := MetaCoq.Erasure.EAst.
-Module T := MetaCoq.Template.Ast.
-Module TUtil := MetaCoq.Template.AstUtils.
-Module EF := MetaCoq.Erasure.ErasureFunction.
-Module Ex := MetaCoq.Erasure.Typed.ExAst.
+Module P := MetaRocq.PCUIC.PCUICAst.
+Module PT := MetaRocq.PCUIC.PCUICTyping.
+Module T2P := MetaRocq.TemplatePCUIC.TemplateToPCUIC.
+Module E := MetaRocq.Erasure.EAst.
+Module T := MetaRocq.Template.Ast.
+Module TUtil := MetaRocq.Template.AstUtils.
+Module EF := MetaRocq.Erasure.ErasureFunction.
+Module Ex := MetaRocq.Erasure.Typed.ExAst.
 
 Local Open Scope bs_scope.
 
@@ -55,7 +55,7 @@ Definition elm_false_rec :=
 
 Context `{ElmPrintConfig}.
 
-Import MCOption.
+Import MROption.
 
 Definition get_fun_name (name : kername) : string :=
   let get_name kn := if print_full_names then
@@ -160,7 +160,7 @@ Definition fresh (name : ident) (used : list ident) : ident :=
        match n with
        | 0 => "unreachable"
        | S n =>
-         let numbered_name := bytestring.String.append name (MCString.string_of_nat i) in
+         let numbered_name := bytestring.String.append name (MRString.string_of_nat i) in
          if existsb (bytestring.String.eqb numbered_name) used then
            f n (S i)
          else
@@ -418,7 +418,7 @@ Fixpoint print_term (Γ : list ident) (t : term) : PrettyPrinter unit :=
            | None =>
              append (get_ctor_name (fst (inductive_mind ind), ctor_name));;
 
-             (* In Coq, parameters are not part of branches. But erasure
+             (* In Rocq, parameters are not part of branches. But erasure
             adds the parameters to each constructor, so we need to get those
             out of the way first. These won't have any uses so we just print _. *)
              append (String.concat "" (map (fun _ => " _") (seq 0 npars)));;
@@ -485,7 +485,7 @@ Fixpoint print_term (Γ : list ident) (t : term) : PrettyPrinter unit :=
     pop_indent
 
   | tCoFix _ _ => printer_fail "Cannot handle cofix"
-  | tPrim _ => printer_fail "Cannot handle Coq primitive types"
+  | tPrim _ => printer_fail "Cannot handle Rocq primitive types"
   | tLazy _ => printer_fail "Cannot handle lazy"
   | tForce _ => printer_fail "Cannot handle force"
   end.

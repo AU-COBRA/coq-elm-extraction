@@ -1,4 +1,4 @@
-{ lib, mkCoqDerivation, which, coq, metacoq, version ? null }:
+{ lib, mkCoqDerivation, which, coq, metarocq, version ? null }:
 
 with lib; mkCoqDerivation {
   pname = "ElmExtraction";
@@ -7,7 +7,7 @@ with lib; mkCoqDerivation {
   domain = "github.com";
 
   inherit version;
-  defaultVersion = with versions; switch [coq.coq-version metacoq.version] [
+  defaultVersion = with versions; switch [coq.coq-version metarocq.version] [
     { cases = [(range "8.17" "9.0") (range "1.3.1" "1.3.4")]; out = "0.1.1"; }
   ] null;
 
@@ -16,12 +16,12 @@ with lib; mkCoqDerivation {
 
   releaseRev = v: "v${v}";
 
-  propagatedBuildInputs = [ coq.ocamlPackages.findlib metacoq ];
+  propagatedBuildInputs = [ coq.ocamlPackages.findlib metarocq ];
 
   postPatch = ''patchShebangs ./tests/process-extraction-examples.sh'';
 
   meta = {
-    description = "A framework for extracting Coq programs to Elm";
+    description = "A framework for extracting Rocq programs to Elm";
     maintainers = with maintainers; [ _4ever2 ];
     license = licenses.mit;
   };

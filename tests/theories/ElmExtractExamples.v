@@ -9,21 +9,21 @@
     directory is different. *)
 From ElmExtraction Require Import StringExtra.
 From ElmExtraction Require Import Common.
-From MetaCoq.Erasure.Typed Require Import Extraction.
+From MetaRocq.Erasure.Typed Require Import Extraction.
 From ElmExtraction Require Import ElmExtract.
 From ElmExtraction Require Import PrettyPrinterMonad.
-From MetaCoq.Erasure.Typed Require Import ResultMonad.
-From MetaCoq.Erasure.Typed Require Import Optimize.
-From MetaCoq.Erasure.Typed Require Import CertifyingEta.
+From MetaRocq.Erasure.Typed Require Import ResultMonad.
+From MetaRocq.Erasure.Typed Require Import Optimize.
+From MetaRocq.Erasure.Typed Require Import CertifyingEta.
 From ElmExtraction.Tests Require Import ElmExtractTests.
 From ElmExtraction.Tests Require Import Ack.
-From MetaCoq.Common Require Import Kernames.
-From MetaCoq.Template Require Import Ast.
-From MetaCoq.Template Require Import TemplateMonad.
-From MetaCoq.Utils Require Import utils.
-From MetaCoq.Utils Require Import bytestring.
+From MetaRocq.Common Require Import Kernames.
+From MetaRocq.Template Require Import Ast.
+From MetaRocq.Template Require Import TemplateMonad.
+From MetaRocq.Utils Require Import utils.
+From MetaRocq.Utils Require Import bytestring.
 
-Import MCMonadNotation.
+Import MRMonadNotation.
 Local Open Scope bs_scope.
 
 #[local]
@@ -77,7 +77,7 @@ Module ElmExamples.
       Common.parens false ("Debug.toString " ++ Common.parens false test) ++ Common.nl ++
     "suite = Test.test (Debug.toString 1)" ++ Common.parens false ("\ _ -> " ++ test).
 
-  (* [safe_pred] example is inspired by Letozey's A New Extraction for Coq *)
+  (* [safe_pred] example is inspired by Letozey's A New Extraction for Rocq *)
   Definition safe_pred (n:nat) (not_zero : O<>n) : {p :nat | n=(S p)} :=
     match n as n0 return (n0 = n -> _ -> _ )with
     | O => fun heq h => False_rect _ (ltac:(cbn; intros; easy))
@@ -87,7 +87,7 @@ Module ElmExamples.
   Program Definition safe_pred_full := safe_pred 1 (ltac:(easy)).
   Program Definition safe_pred_partial := safe_pred 1.
 
-  MetaCoq Run (t <- tmQuoteRecTransp safe_pred_full false ;;
+  MetaRocq Run (t <- tmQuoteRecTransp safe_pred_full false ;;
                tmDefinition "safe_pred_full_syn" t).
 
   (* In fully applied case the last argument of [safe_pred] is removed*)
@@ -97,7 +97,7 @@ Module ElmExamples.
     (main_and_test "Expect.equal safe_pred_full (Exist O)")
     [] [].
 
-  MetaCoq Run (t <- tmQuoteRecTransp safe_pred_partial false ;;
+  MetaRocq Run (t <- tmQuoteRecTransp safe_pred_partial false ;;
                mpath <- tmCurrentModPath tt;;
                Σeta <- run_transforms_list t.1
                  [template_eta (fun _ => None) true true [<%% @safe_pred_partial %%>] (fun _ => false)] ;;
@@ -105,7 +105,7 @@ Module ElmExamples.
                Certifying.gen_defs_and_proofs (declarations t.1) (declarations Σeta) mpath "_cert_pass"
                                               (KernameSet.singleton <%% @safe_pred_partial %%> )).
 
-  MetaCoq Run (t <- tmQuoteRecTransp ElmExtraction_Tests_ElmExtractExamples_ElmExamples_safe_pred_partial_cert_pass false;;
+  MetaRocq Run (t <- tmQuoteRecTransp ElmExtraction_Tests_ElmExtractExamples_ElmExamples_safe_pred_partial_cert_pass false;;
                tmDefinition "safe_pred_partial_syn" t).
 
   (* After eta-expansion the main [safe_pred_partial] is guarded by a lambda *)
@@ -117,11 +117,11 @@ Module ElmExamples.
           [] [].
 
 
-  MetaCoq Quote Recursively Definition rev_syn := List.rev.
+  MetaRocq Quote Recursively Definition rev_syn := List.rev.
 
   Definition ackermann := Eval compute in ack.
 
-  MetaCoq Run (t <- tmQuoteRecTransp ackermann false ;;
+  MetaRocq Run (t <- tmQuoteRecTransp ackermann false ;;
                tmDefinition "ackermann_syn" t).
 
   Redirect "extracted-code/elm-extract/Ackermann.elm"
@@ -134,22 +134,7 @@ Module ElmExamples.
            (Preambule "Rev")
            (main_and_test "Expect.equal (rev (Cons 3 (Cons 2 (Cons 1 (Cons 0 Nil))))) (Cons 0 (Cons 1 (Cons 2 (Cons 3 Nil))))").
 
-  (* TODO: remove once 8.20 support is removed.
-    Added because stdlib map definition differ between versions. *)
-  Definition nth := fun A : Type =>
-  fix nth (n : nat) (l : list A) (default : A) {struct l} : A :=
-    match n with
-    | 0 => match l with
-         | [] => default
-           | x :: l' => x
-           end
-    | S m => match l with
-             | [] => default
-             | x :: t => nth m t default
-             end
-    end.
-
-  MetaCoq Quote Recursively Definition nth_syn := nth.
+  MetaRocq Quote Recursively Definition nth_syn := nth.
 
   Definition result_nth :=
     <$ "type Nat";
@@ -173,8 +158,8 @@ Module ElmExamples.
        "      case l of";
        "        Nil ->";
        "          default";
-       "        Cons x t ->";
-       "          nth m t default" $>.
+       "        Cons x l2 ->";
+       "          nth m l2 default" $>.
 
   Example ElmExamples_nth :
     extract nth_syn = Ok result_nth.
@@ -185,16 +170,7 @@ Module ElmExamples.
   (Preambule "Nth")
   (main_and_test "Expect.equal (nth O (Cons 1 (Cons 0 Nil)) 0) 1").
 
-  (* TODO: remove once 8.20 support is removed.
-     Added because stdlib map definition differ between versions. *)
-  Definition map := fun (A B : Type) (f : A -> B) =>
-  fix map (l : list A) : list B :=
-    match l with
-    | [] => []
-    | a :: t => f a :: map t
-    end.
-
-  MetaCoq Quote Recursively Definition map_syn := map.
+  MetaRocq Quote Recursively Definition map_syn := map.
   Definition result_map :=
     <$ "type List a";
        "  = Nil";
@@ -207,8 +183,8 @@ Module ElmExamples.
        "      case l of";
        "        Nil ->";
        "          Nil";
-       "        Cons a t ->";
-       "          Cons (f a) (map2 t)";
+       "        Cons a l2 ->";
+       "          Cons (f a) (map2 l2)";
        "  in";
        "  map2" $>.
 
@@ -219,18 +195,9 @@ Module ElmExamples.
 
   Example ElmList_map :
     extract map_syn = Ok result_map.
-  Proof. reflexivity. Qed.
+  Proof. vm_compute. reflexivity. Qed.
 
-  (* TODO: remove once 8.20 support is removed.
-     Added because stdlib map definition differ between versions. *)
-  Definition fold_left := fun (A B : Type) (f : A -> B -> A) =>
-    fix fold_left (l : list B) (a0 : A) {struct l} : A :=
-      match l with
-      | [] => a0
-      | b :: t => fold_left t (f a0 b)
-      end.
-
-  MetaCoq Quote Recursively Definition foldl_syn := fold_left.
+  MetaRocq Quote Recursively Definition foldl_syn := fold_left.
   Definition result_foldl :=
   <$ "type List a";
       "  = Nil";
@@ -243,8 +210,8 @@ Module ElmExamples.
       "      case l of";
       "        Nil ->";
       "          a0";
-      "        Cons b t ->";
-      "          fold_left2 t (f a0 b)";
+      "        Cons b l2 ->";
+      "          fold_left2 l2 (f a0 b)";
       "  in";
       "  fold_left2" $>.
 
@@ -255,7 +222,7 @@ Module ElmExamples.
 
   Example ElmList_foldl :
     extract foldl_syn = Ok result_foldl.
-  Proof. reflexivity. Qed.
+  Proof. vm_compute. reflexivity. Qed.
 
   Local Open Scope nat.
   Program Definition inc_counter (st : nat) (inc : {z : nat | 0 <? z}) :
@@ -266,7 +233,7 @@ Module ElmExamples.
     rewrite Nat.ltb_lt in *. lia.
   Qed.
 
-  MetaCoq Run (t <- tmQuoteRecTransp inc_counter false ;;
+  MetaRocq Run (t <- tmQuoteRecTransp inc_counter false ;;
                tmDefinition "inc_counter_syn" t).
 
   Redirect "extracted-code/elm-extract/Increment.elm"
@@ -274,7 +241,7 @@ Module ElmExamples.
          (Preambule "Increment")
          (main_and_test "Expect.equal (inc_counter O (Exist (S O))) (Exist (S O))").
 
-  MetaCoq Quote Recursively Definition last_syn := List.last.
+  MetaRocq Quote Recursively Definition last_syn := List.last.
 
   Redirect "extracted-code/elm-extract/Last.elm"
   Compute wrapped last_syn
@@ -305,7 +272,7 @@ Module ElmExamples.
     intros. cbn. lia.
   Qed.
 
-  MetaCoq Run (t <- tmQuoteRecTransp (@head_of_repeat_plus_one) false ;;
+  MetaRocq Run (t <- tmQuoteRecTransp (@head_of_repeat_plus_one) false ;;
                tmDefinition "head_of_repeat_plus_one_syn" t).
 
   Redirect "extracted-code/elm-extract/SafeHead.elm"

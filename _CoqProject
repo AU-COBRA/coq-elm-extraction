@@ -1,7 +1,4 @@
 -arg -w -arg -non-reversible-notation
-# TODO: remove once 8.20 support is removed.
--arg -w -arg -deprecated-from-Coq
--arg -w -arg -deprecated-dirpath-Coq
 
 -Q theories ElmExtraction
 theories/Common.v

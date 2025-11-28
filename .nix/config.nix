@@ -6,33 +6,36 @@
 
   attribute = "ElmExtraction";
 
-  default-bundle = "8.17";
+  no-rocq-yet = true;
 
-  bundles."8.17" = {
-    coqPackages.coq.override.version = "8.17";
-    coqPackages.metacoq.override.version = "1.3.1-8.17";
-  };
-  bundles."8.18" = {
-    coqPackages.coq.override.version = "8.18";
-    coqPackages.metacoq.override.version = "1.3.1-8.18";
-  };
-  bundles."8.19" = {
-    coqPackages.coq.override.version = "8.19";
-    coqPackages.metacoq.override.version = "1.3.3-8.19";
-  };
-  bundles."8.20" = {
-    coqPackages.coq.override.version = "8.20";
-    coqPackages.metacoq.override.version = "1.3.4-8.20";
-  };
+  default-bundle = "9.0";
+
   bundles."9.0" = {
-    coqPackages.coq.override.version = "9.0";
-    coqPackages.metacoq.override.version = "1.3.4-9.0";
+    coqPackages = {
+      coq.override.version = "9.0.1";
+      metarocq.override.version = "1.4-9.0.1";
+    };
+    rocqPackages = {
+      rocq-core.override.version = "9.0.1";
+    };
   };
+  bundles."9.1" = {
+    coqPackages = {
+      coq.override.version = "9.1";
+      metarocq.override.version = "1.4-9.1";
+    };
+    rocqPackages = {
+      rocq-core.override.version = "9.1";
+    };
+  };
+
+  bundles."9.0".push-branches = ["master"];
+  bundles."9.1".push-branches = ["master"];
 
   ## Cachix caches to use in CI
   cachix.coq = {};
   cachix.coq-community = {};
-  cachix.metacoq = {};
+  cachix.metarocq = {};
 
   cachix.au-cobra.authToken = "CACHIX_AUTH_TOKEN";
 }
